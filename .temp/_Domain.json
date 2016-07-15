@@ -1,0 +1,74 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "distwesselsnz": {
+      "Properties": {
+        "DistributionConfig": {
+          "Aliases": [
+            "wessels.nz",
+            "www.wessels.nz"
+          ],
+          "CustomErrorResponses": [
+            {
+              "ErrorCachingMinTTL": 0,
+              "ErrorCode": 403,
+              "ResponseCode": "200",
+              "ResponsePagePath": null
+            },
+            {
+              "ErrorCachingMinTTL": 0,
+              "ErrorCode": 404,
+              "ResponseCode": "200",
+              "ResponsePagePath": null
+            }
+          ],
+          "DefaultCacheBehavior": {
+            "AllowedMethods": [
+              "HEAD",
+              "GET"
+            ],
+            "CachedMethods": [
+              "HEAD",
+              "GET"
+            ],
+            "ForwardedValues": {
+              "Cookies": {
+                "Forward": "none"
+              }
+            },
+            "MinTTL": 0,
+            "TargetOriginId": "S3-wessels.nz",
+            "ViewerProtocolPolicy": "redirect-to-https"
+          },
+          "DefaultRootObject": "index.html",
+          "Enabled": true,
+          "Origins": [
+            {
+              "DomainName": "wessels.nz.dev.us-east-1.s3.amazonaws.com",
+              "Id": "S3-wessels.nz",
+              "S3OriginConfig": {}
+            }
+          ],
+          "PriceClass": "PriceClass_All",
+          "Restrictions": {
+            "GeoRestriction": {
+              "Locations": [],
+              "RestrictionType": "none"
+            }
+          },
+          "ViewerCertificate": {
+            "MinimumProtocolVersion": "TLSv1",
+            "SslSupportMethod": "sni-only"
+          }
+        }
+      },
+      "Type": "AWS::CloudFront::Distribution"
+    },
+    "zonewesselsnz": {
+      "Properties": {
+        "Name": "wessels.nz."
+      },
+      "Type": "AWS::Route53::HostedZone"
+    }
+  }
+}

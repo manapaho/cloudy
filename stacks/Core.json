@@ -1,0 +1,217 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "EnvironmentPrefix": {
+      "Type": "String"
+    },
+    "DomainStackTemplateUrl": {
+      "Type": "String"
+    },
+    "WebStackTemplateUrl": {
+      "Type": "String"
+    },
+    "LambdasBucketName": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "DomainStack": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": {
+          "Ref": "DomainStackTemplateUrl"
+        },
+        "TimeoutInMinutes": "60"
+      }
+    },
+    "WebStack": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": {
+          "Ref": "WebStackTemplateUrl"
+        },
+        "TimeoutInMinutes": "60"
+      },
+      "DependsOn": "DomainStack"
+    },
+    "StackOutputLambdaRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "AllowLogsAndDescribeStacks",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": "arn:aws:logs:*:*:*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": ["cloudformation:DescribeStacks"],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "StackOutputLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "LambdasBucketName"
+          },
+          "S3Key": "CloudFormationStackOutput.zip"
+        },
+        "FunctionName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "EnvironmentPrefix"
+              },
+              "CloudFormationStackOutput"
+            ]
+          ]
+        },
+        "Handler": "index.handler",
+        "MemorySize": 128,
+        "Role": {
+          "Fn::GetAtt": [
+            "StackOutputLambdaRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "nodejs4.3",
+        "Timeout": 10
+      },
+      "DependsOn": "StackOutputLambdaRole"
+    },
+    "Lambda1Role": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "AllowLogs",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": "arn:aws:logs:*:*:*"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "Lambda1": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "LambdasBucketName"
+          },
+          "S3Key": "lambda1.zip"
+        },
+        "FunctionName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "EnvironmentPrefix"
+              },
+              "Lambda1"
+            ]
+          ]
+        },
+        "Handler": "index.handler",
+        "MemorySize": 128,
+        "Role": {
+          "Fn::GetAtt": [
+            "Lambda1Role",
+            "Arn"
+          ]
+        },
+        "Runtime": "nodejs4.3",
+        "Timeout": 10
+      },
+      "DependsOn": "Lambda1Role"
+    },
+    "NameServerSetInfo": {
+      "Type": "Custom::NameServerSetInfo",
+      "Properties": {
+        "ServiceToken": { "Fn::GetAtt" : ["StackOutputLambda", "Arn"] },
+        "StackName": "Prod-Manapaho-us-east-1-NameServerSet"
+      },
+      "DependsOn": "StackOutputLambda"
+    }
+  },
+  "Outputs": {
+    "SomethingFromTheDomainStack": {
+      "Value": {
+        "Fn::GetAtt": [
+          "DomainStack",
+          "Outputs.Something"
+        ]
+      }
+    },
+    "SomethingFromTheWebStack": {
+      "Value": {
+        "Fn::GetAtt": [
+          "WebStack",
+          "Outputs.Something"
+        ]
+      }
+    },
+    "NameServerSetId": {
+      "Value": {
+        "Fn::GetAtt": [
+          "NameServerSetInfo",
+          "DelegationSetId"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+  },
+  "Resources": {
+    "HalloBucket" : {
+      "Type" : "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "prod-manapaho.us-east-1.web-stuff"
+      }
+    }
+  },
+  "Outputs": {
+    "Something": {
+      "Value": {
+        "Fn::GetAtt": [
+          "HalloBucket",
+          "WebsiteURL"
+        ]
+      }
+    }
+  }
+}

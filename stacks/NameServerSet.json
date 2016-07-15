@@ -1,0 +1,120 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "EnvironmentPrefix": {
+      "Type": "String"
+    },
+    "LambdasBucketName": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "Route53ReusableDelegationSetLambdaRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "AllowLogs",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": "arn:aws:logs:*:*:*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "route53:*"
+                  ],
+                  "Resource": [
+                    "*"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "Route53ReusableDelegationSetLambda": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "LambdasBucketName"
+          },
+          "S3Key": "Route53ReusableDelegationSet.zip"
+        },
+        "FunctionName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "EnvironmentPrefix"
+              },
+              "Route53ReusableDelegationSet"
+            ]
+          ]
+        },
+        "Handler": "index.handler",
+        "MemorySize": 128,
+        "Role": {
+          "Fn::GetAtt": [
+            "Route53ReusableDelegationSetLambdaRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "nodejs4.3",
+        "Timeout": 120
+      },
+      "DependsOn": "Route53ReusableDelegationSetLambdaRole"
+    },
+    "ReusableDelegationSet": {
+      "Type": "Custom::Route53ReusableDelegationSet",
+      "Properties": {
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "Route53ReusableDelegationSetLambda",
+            "Arn"
+          ]
+        },
+        "CallerReference": {
+          "Fn::GetAtt": [
+            "Route53ReusableDelegationSetLambda",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": "Route53ReusableDelegationSetLambda"
+    }
+  },
+  "Outputs": {
+    "DelegationSetId": {
+      "Value": {
+        "Fn::GetAtt": [
+          "ReusableDelegationSet",
+          "DelegationSetId"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+  },
+  "Resources": {
+    "HollaBucket" : {
+      "Type" : "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "prod-manapaho.us-east-1.domain-stuff"
+      }
+    }
+  },
+  "Outputs": {
+    "Something": {
+      "Value": {
+        "Fn::GetAtt": [
+          "HollaBucket",
+          "DomainName"
+        ]
+      }
+    }
+  }
+}
