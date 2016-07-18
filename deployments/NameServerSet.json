@@ -1,0 +1,32 @@
+{
+  "Name": "Prod-Manapaho",
+  "Stacks": [
+    {
+      "Name": "NameServerSet",
+      "Region": "us-east-1",
+      "Parameters": [
+      ],
+      "Tags": [],
+      "Policy": {
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": "Update:*",
+            "Principal": "*",
+            "Resource": "*"
+          }
+        ]
+      },
+      "UpdatePolicy": {
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": "Update:*",
+            "Principal": "*",
+            "Resource": "*"
+          }
+        ]
+      }
+    }
+  ]
+}

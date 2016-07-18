@@ -47,10 +47,27 @@ by simply reviewing and merging it from `master` into each `production` Environm
 # Deployment
 
 After you've created a new branch or fork you only have to change the `config.json` with the
-parameters for your new Environment and then run `npm run deploy`.
+parameters for your new Environment and then run:
+
+`npm run deploy -- --config Core`
 
 This will deploy all configured CloudFormation Stacks and Resources, compile and upload all your Lambdas
 and Web/Micro-Sites and populate the databases.
+
+### Deployments
+
+Usually the `Core` deployment should deploy the complete Environment, but there are situations where
+Environments share some higher level resources. A good example for that is a common Name-Server-Set.
+
+In general these common resources would be deployed only once before deploying any other environments.
+You can group these common resources in a single deployment or in multiple deployments. It is up to you
+how you structure these.
+
+Just make sure that common shared resources are not part of your core deployments.
+
+To deploy a common shared resource do something like this:
+
+`npm run deploy -- --config NameServerSet`
 
 # Security
 

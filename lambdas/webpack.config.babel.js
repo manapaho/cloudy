@@ -12,10 +12,10 @@
 /**
  * Import dependencies.
  */
-import fs from 'fs';
-import path from 'path';
-import webpack from 'webpack';
-import CleanWebpackPlugin from 'clean-webpack-plugin';
+var fs = require('fs');
+var path = require('path');
+var webpack = require('webpack');
+var CleanWebpackPlugin = require('clean-webpack-plugin');
 
 /**
  * Export the lambda build configuration.
