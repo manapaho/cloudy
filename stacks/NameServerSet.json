@@ -9,7 +9,7 @@
     }
   },
   "Resources": {
-    "Route53ReusableDelegationSetLambdaRole": {
+    "ReusableDelegationSetLambdaRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
         "AssumeRolePolicyDocument": {
@@ -55,7 +55,7 @@
         ]
       }
     },
-    "Route53ReusableDelegationSetLambda": {
+    "ReusableDelegationSetLambda": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
@@ -79,32 +79,32 @@
         "MemorySize": 128,
         "Role": {
           "Fn::GetAtt": [
-            "Route53ReusableDelegationSetLambdaRole",
+            "ReusableDelegationSetLambdaRole",
             "Arn"
           ]
         },
         "Runtime": "nodejs4.3",
         "Timeout": 120
       },
-      "DependsOn": "Route53ReusableDelegationSetLambdaRole"
+      "DependsOn": "ReusableDelegationSetLambdaRole"
     },
     "ReusableDelegationSet": {
-      "Type": "Custom::Route53ReusableDelegationSet",
+      "Type": "Custom::ReusableDelegationSet",
       "Properties": {
         "ServiceToken": {
           "Fn::GetAtt": [
-            "Route53ReusableDelegationSetLambda",
+            "ReusableDelegationSetLambda",
             "Arn"
           ]
         },
         "CallerReference": {
           "Fn::GetAtt": [
-            "Route53ReusableDelegationSetLambda",
+            "ReusableDelegationSetLambda",
             "Arn"
           ]
         }
       },
-      "DependsOn": "Route53ReusableDelegationSetLambda"
+      "DependsOn": "ReusableDelegationSetLambda"
     }
   },
   "Outputs": {

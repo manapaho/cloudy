@@ -2,9 +2,14 @@
   "Name": "Prod-Wessels",
   "Stacks": [
     {
-      "Name": "NameServerSet",
+      "Name": "HostedZone",
       "Region": "us-east-1",
       "Parameters": [
+        {
+          "ParameterKey": "Domain",
+          "ParameterValue": "wessels.nz",
+          "UsePreviousValue": false
+        }
       ],
       "Tags": [
         {

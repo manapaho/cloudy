@@ -17,34 +17,38 @@ exports.handler = (event, context) => {
 
   const route53 = new AWS.Route53();
 
-  route53.listReusableDelegationSets({}).promise()
+  route53.listHostedZones({}).promise()
     .then(response => {
-      console.log('CHECKING IF DELEGATIONSET EXISTS ALREADY');
-      return response.DelegationSets.find(delegationSet => {
-        return delegationSet.CallerReference === event.ResourceProperties.CallerReference;
+      console.log('CHECKING IF HOSTEDZONE ALREADY EXISTS');
+      return response.HostedZones.find(hostedZone => {
+        return hostedZone.Name === `${event.ResourceProperties.Domain}.`;
       });
     })
     .catch(err => {
-      console.log('FAILED TO CHECK IF DELEGATIONSET EXISTS ALREADY:', err);
+      console.log('FAILED TO CHECK IF HOSTEDZONE ALREADY EXISTS:', err);
       return null;
     })
-    .then(reusableDelegationSet => {
-      if (!reusableDelegationSet) {
-        route53.createReusableDelegationSet({CallerReference: event.ResourceProperties.CallerReference}).promise()
+    .then(hostedZone => {
+      if (!hostedZone) {
+        route53.createHostedZone({
+          CallerReference: event.ResourceProperties.CallerReference,
+          Name: event.ResourceProperties.Domain,
+          DelegationSetId: event.ResourceProperties.DelegationSetId
+        }).promise()
           .then(response => {
-            console.log('CREATED DELEGATIONSET SUCCESSFULLY:', response);
+            console.log('CREATED HOSTEDZONE SUCCESSFULLY:', response);
             responseStatus = "SUCCESS";
-            responseData['DelegationSetId'] = response.Id.replace('/delegationset/', '');
+            responseData['HostedZoneId'] = response.Id.replace('/hostedzone/', '');
             sendResponse(event, context, responseStatus, responseData);
           })
           .catch(err => {
-            console.log('FAILED TO CREATE DELEGATIONSET:', err);
+            console.log('FAILED TO CREATE HOSTEDZONE:', err);
             sendResponse(event, context, responseStatus, responseData);
           });
       } else {
-        console.log('DELEGATIONSET ALREADY EXISTS');
+        console.log('HOSTEDZONE ALREADY EXISTS');
         responseStatus = "SUCCESS";
-        responseData['DelegationSetId'] = reusableDelegationSet.Id.replace('/delegationset/', '');
+        responseData['HostedZoneId'] = hostedZone.Id.replace('/hostedzone/', '');
         sendResponse(event, context, responseStatus, responseData);
       }
     });

@@ -2,6 +2,45 @@
 
 const AWS = require('aws-sdk');
 
+let x = "/delegationset/NHKXBB6SHGKLN";
+console.log(x.replace('/delegationset/', ''));
+return;
+
+const route53 = new AWS.Route53();
+
+route53.listHostedZones({}).promise()
+  .then(response => {
+    console.log(response);
+    return response.HostedZones.find(hostedZone => {
+      return hostedZone.Name === 'manapaho.com.';
+    });
+  })
+  .catch(err => {
+    console.log(err);
+  })
+  .then(hostedZone => {
+    console.log(hostedZone);
+  });
+
+return;
+
+/*
+
+route53.listReusableDelegationSets({}).promise()
+  .then(response => {
+    return response.DelegationSets.find(delegationSet => {
+      return delegationSet.CallerReference === 'arn:aws:lambda:us-east-1:238541850529:function:Prod-Wessels-us-east-1-Route53ReusableDelegationSet';
+    });
+  })
+  .catch(err => {
+    console.log(err);
+  })
+  .then(reusableDelegationSet => {
+    console.log(reusableDelegationSet);
+  });
+
+return;
+
 AWS.config.update({region: 'us-east-1'});
 
 let stackName = 'Prod-Manapaho-us-east-1-NameServerSet';
@@ -46,3 +85,4 @@ route53.createReusableDelegationSet({CallerReference: 'createReusableDelegationS
   .catch(err => {
     console.log(err, err.stack);
   });
+*/
